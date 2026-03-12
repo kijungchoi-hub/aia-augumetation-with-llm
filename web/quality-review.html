@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Quality Review</title>
+  <link rel="stylesheet" href="./quality-review.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="panel">
+        <p class="eyebrow">Data Quality Review</p>
+        <h1>Version Sheet Review</h1>
+        <p class="muted">Review each row in the CSV files under `./data/versions` and record the result as Y or N.</p>
+      </div>
+
+      <div class="panel controls">
+        <label>
+          <span>Version</span>
+          <select id="versionSelect"></select>
+        </label>
+        <label>
+          <span>Dataset File</span>
+          <select id="datasetSelect"></select>
+        </label>
+        <label>
+          <span>Search</span>
+          <input id="searchInput" type="search" placeholder="sample_id, source_case_id, intent_type">
+        </label>
+      </div>
+
+      <div class="panel summary">
+        <div class="summary-grid">
+          <div>
+            <span class="summary-label">Total</span>
+            <strong id="totalCount">0</strong>
+          </div>
+          <div>
+            <span class="summary-label">Reviewed</span>
+            <strong id="reviewedCount">0</strong>
+          </div>
+          <div>
+            <span class="summary-label">Y</span>
+            <strong id="yesCount">0</strong>
+          </div>
+          <div>
+            <span class="summary-label">N</span>
+            <strong id="noCount">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel list-panel">
+        <div class="list-header">
+          <strong>Rows</strong>
+          <span id="filterCount" class="muted">0 items</span>
+        </div>
+        <div id="rowList" class="row-list"></div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="panel topbar">
+        <div>
+          <p id="datasetTitle" class="dataset-title">Select a dataset.</p>
+          <p id="datasetMeta" class="muted"></p>
+        </div>
+        <div class="topbar-actions">
+          <button id="prevButton" type="button">Previous</button>
+          <button id="nextButton" type="button">Next</button>
+          <button id="exportCurrentButton" type="button">Export Current CSV</button>
+          <button id="exportAllButton" type="button">Export All CSV</button>
+        </div>
+      </div>
+
+      <div class="panel review-panel">
+        <div class="review-header">
+          <div>
+            <p id="recordTitle" class="record-title">Select a row to review.</p>
+            <p id="recordMeta" class="muted"></p>
+          </div>
+          <div class="review-actions">
+            <button id="markYesButton" class="decision yes" type="button">Y</button>
+            <button id="markNoButton" class="decision no" type="button">N</button>
+            <span id="decisionBadge" class="decision-badge">Pending</span>
+          </div>
+        </div>
+        <label class="note-box">
+          <span>Review Note</span>
+          <textarea id="noteInput" rows="3" placeholder="Write a short reason for the review decision."></textarea>
+        </label>
+      </div>
+
+      <div id="fieldGrid" class="field-grid"></div>
+    </main>
+  </div>
+
+  <script charset="utf-8" src="./review-data/index.js"></script>
+  <script charset="utf-8" src="./quality-review.js"></script>
+</body>
+</html>

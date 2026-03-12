@@ -198,6 +198,26 @@
 ## 버전 규칙
 
 - `ver1.0`: 현재 기준 데이터셋
+- `ver1.1`: `train` 증강 배수를 2배로 확장한 데이터셋
+- `ver1.2`: `train` 증강 배수를 4배로 확장한 데이터셋
+
+## 데이터 품질검수 웹페이지
+
+- 변환 스크립트: `scripts/Export-QualityReviewData.ps1`
+- 검수 페이지: `web/quality-review.html`
+- 생성 데이터 자산: `web/review-data`
+
+### 사용 방법
+
+1. `powershell -ExecutionPolicy Bypass -File .\scripts\Export-QualityReviewData.ps1`
+2. 브라우저에서 `web/quality-review.html`을 연다.
+3. 버전과 CSV 파일을 선택한 뒤 각 행에 대해 `Y` 또는 `N`으로 판정한다.
+4. 필요하면 `현재 파일 결과 CSV` 또는 `전체 결과 CSV`로 내보낸다.
+
+### 검수 결과 저장 방식
+
+- 브라우저 `localStorage`에 임시 저장된다.
+- 내보내기 CSV에는 `dataset_key`, `row_key`, `review_result`, `review_note`, `updated_at` 등이 포함된다.
 - `ver1.1`: `train_augmented`, `train_final` 2배
 - `ver1.2`: `train_augmented`, `train_final` 4배
 
