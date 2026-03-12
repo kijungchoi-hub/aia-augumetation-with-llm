@@ -41,9 +41,9 @@ $originSttByCaseId = @{}
 if (Test-Path -LiteralPath $OriginCsv) {
     $originRows = @(Import-Csv -LiteralPath $OriginCsv)
     foreach ($originRow in $originRows) {
-        $caseId = [string]$originRow.'ƒ…¿ÃΩ∫ID'
+        $caseId = [string]$originRow.'ÏºÄÏù¥Ïä§ID'
         if (-not [string]::IsNullOrWhiteSpace($caseId)) {
-            $originSttByCaseId[$caseId] = [string]$originRow.'STT¿¸πÆ'
+            $originSttByCaseId[$caseId] = [string]$originRow.'STTÏ†ÑÎ¨∏'
         }
     }
 }

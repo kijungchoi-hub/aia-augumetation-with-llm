@@ -1,4 +1,4 @@
-﻿# AIA STT Augmentation Pipeline
+# AIA STT Augmentation Pipeline
 
 `data/origin/stt_summary.csv`를 기준 입력으로 사용해 STT 정제, auto labeling, 요약/표현 증강, 학습용 split 생성, 버전별 데이터셋 확장을 수행한다.
 

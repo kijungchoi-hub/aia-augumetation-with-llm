@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [string]$BaseNormalizedCsv = ".\data\processed\base_normalized.csv",
     [string]$AugmentedValidatedCsv = ".\data\processed\augmented_validated.csv",

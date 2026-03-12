@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [string]$InputCsv = ".\data\origin\stt_summary.csv",
     [string]$OutputDir = ".\data\processed",

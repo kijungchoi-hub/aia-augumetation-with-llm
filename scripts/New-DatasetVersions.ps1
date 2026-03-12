@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [string]$SplitsDir = '.\data\splits',
     [string]$OutputRoot = '.\data\versions'

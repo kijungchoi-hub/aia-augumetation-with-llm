@@ -1,4 +1,4 @@
-﻿"split","sample_id","source_case_id","aug_type","answer_style","intent_type","label_grade","label_confidence","stt_text","answer_gold","answer_standardized","answer_short","keyword_raw","keyword_slots","keyword_labels","utterance_labels","auto_label_json"
+"split","sample_id","source_case_id","aug_type","answer_style","intent_type","label_grade","label_confidence","stt_text","answer_gold","answer_standardized","answer_short","keyword_raw","keyword_slots","keyword_labels","utterance_labels","auto_label_json"
 "valid","21","21","original","gold","보험금청구","Gold","0.87","상담사: 반갑습니다 박예은 입니다.
 고객: 네 수고 많으세요 제 것 좀 조회 좀 부탁드릴게요.
 상담사: 네 저희 간단한 본인 확인 먼저 도와드리겠습니다. 지금 전화 주신 분 계약자 조 동수님 본인 맞으실까요?

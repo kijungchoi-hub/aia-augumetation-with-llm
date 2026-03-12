@@ -1,4 +1,4 @@
-﻿"split","sample_id","source_case_id","aug_type","answer_style","intent_type","label_grade","label_confidence","stt_text","answer_gold","answer_standardized","answer_short","keyword_raw","keyword_slots","keyword_labels","utterance_labels","auto_label_json"
+"split","sample_id","source_case_id","aug_type","answer_style","intent_type","label_grade","label_confidence","stt_text","answer_gold","answer_standardized","answer_short","keyword_raw","keyword_slots","keyword_labels","utterance_labels","auto_label_json"
 "train","2","2","original","gold","가상계좌","Gold","0.98","상담사: 반갑습니다. 박은화 입니다.
 고객: 네 수고하셨습니다.
 상담사: 감사합니다.

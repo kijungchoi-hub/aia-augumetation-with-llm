@@ -1,2 +1,2 @@
-﻿window.QUALITY_REVIEW_DATA = window.QUALITY_REVIEW_DATA || {};
+window.QUALITY_REVIEW_DATA = window.QUALITY_REVIEW_DATA || {};
 window.QUALITY_REVIEW_DATA["ver1.1/manifest"] = {"key":"ver1.1/manifest","version":"ver1.1","fileName":"manifest.csv","fileBaseName":"manifest","rowCount":1,"columns":["version","multiplier","base_train_rows","base_valid_rows","base_test_rows","train_augmented_rows","train_final_rows"],"rows":[{"rowIndex":1,"values":{"version":"ver1.1","multiplier":"2","base_train_rows":"136","base_valid_rows":"16","base_test_rows":"17","train_augmented_rows":"1252","train_final_rows":"1524"},"originSttText":""}]};

@@ -1,4 +1,4 @@
-﻿"case_id","intent_type","label_grade","label_confidence","stt_text","llm_answer","answer_gold","answer_standardized","answer_short","summary_structured","keyword_raw","keyword_tokens","keyword_slots","keyword_labels","utterance_labels","auto_label_json","validation_pass","validation_reason"
+"case_id","intent_type","label_grade","label_confidence","stt_text","llm_answer","answer_gold","answer_standardized","answer_short","summary_structured","keyword_raw","keyword_tokens","keyword_slots","keyword_labels","utterance_labels","auto_label_json","validation_pass","validation_reason"
 "2","가상계좌","Gold","0.98","상담사: 반갑습니다. 박은화 입니다.
 고객: 네 수고하셨습니다.
 상담사: 감사합니다.
