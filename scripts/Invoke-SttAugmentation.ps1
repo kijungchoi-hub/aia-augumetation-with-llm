@@ -1,28 +1,24 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$InputCsv = ".\data\origin\stt_summary.csv",
     [string]$OutputDir = ".\data\processed",
     [string]$CacheDir = ".\data\cache\llm-augmentation",
-    [string]$Model = "gpt-4.1-mini",
-    [string]$ApiKey = "",
+    [string]$Model = "gpt-5.4",
+    [string]$CodexCommand = "codex.cmd",
+    [string]$SystemPromptPath = ".\prompts\stt-augmentation-system.txt",
+    [string]$UserPromptTemplatePath = ".\prompts\stt-augmentation-user-template.txt",
     [int]$AugmentationsPerCase = 5,
     [int]$MaxRows = 0,
     [int]$RequestDelayMs = 0,
     [int]$MaxRetries = 3,
+    [int]$CodexTimeoutSec = 300,
     [switch]$DisableCache
 )
 
-Set-StrictMode -Version Latest
+Set-StrictMode -Off
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-
-if ([string]::IsNullOrWhiteSpace($ApiKey)) {
-    $ApiKey = [string]$env:OPENAI_API_KEY
-}
-
-if ([string]::IsNullOrWhiteSpace($ApiKey)) {
-    throw "OPENAI_API_KEY is required. Pass -ApiKey or set the OPENAI_API_KEY environment variable."
-}
+$ResolvedCodexCommand = (Get-Command $CodexCommand -ErrorAction Stop).Source
 
 function NWS([string]$Text) {
     if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
@@ -78,33 +74,52 @@ function Strip-JsonFence([string]$Text) {
     return $trimmed
 }
 
+function Resolve-RepoPath([string]$PathValue) {
+    if ([string]::IsNullOrWhiteSpace($PathValue)) { return $PathValue }
+    if ([System.IO.Path]::IsPathRooted($PathValue)) { return $PathValue }
+    $repoRoot = Split-Path -Parent $PSScriptRoot
+    return Join-Path $repoRoot $PathValue
+}
 function Get-CachePath([string]$CaseId, [string]$ModelName, [int]$VariantCount) {
     $safeModel = ($ModelName -replace "[^a-zA-Z0-9._-]", "_")
     $safeCase = ($CaseId -replace "[^a-zA-Z0-9._-]", "_")
     return Join-Path $CacheDir ("{0}__{1}__{2}.json" -f $safeCase, $safeModel, $VariantCount)
 }
 
-function Invoke-OpenAIJson([string]$SystemPrompt, [string]$UserPrompt) {
-    $uri = "https://api.openai.com/v1/chat/completions"
-    $headers = @{
-        Authorization = "Bearer $ApiKey"
-        "Content-Type" = "application/json"
-    }
-    $body = @{
-        model = $Model
-        temperature = 0.3
-        response_format = @{ type = "json_object" }
-        messages = @(
-            @{ role = "system"; content = $SystemPrompt }
-            @{ role = "user"; content = $UserPrompt }
-        )
-    }
+function Invoke-CodexChatJson([string]$SystemPrompt, [string]$UserPrompt, [string]$CaseId) {
+    $repoRoot = Split-Path -Parent $PSScriptRoot
+    $tempDir = Join-Path $CacheDir "_codex_tmp"
+    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+    $safeCase = $CaseId -replace "[^a-zA-Z0-9._-]", "_"
+    $requestId = "{0}_{1}" -f $safeCase, ([guid]::NewGuid().ToString("N"))
+    $promptPath = Join-Path $tempDir ("prompt_{0}.txt" -f $requestId)
+    $outputPath = Join-Path $tempDir ("response_{0}.json" -f $requestId)
+    $stdoutPath = Join-Path $tempDir ("stdout_{0}.log" -f $requestId)
+    $stderrPath = Join-Path $tempDir ("stderr_{0}.log" -f $requestId)
+    $combinedPrompt = @"
+$SystemPrompt
+
+$UserPrompt
+"@
+    Set-Content -LiteralPath $promptPath -Value $combinedPrompt -Encoding UTF8
 
     $attempt = 1
     while ($true) {
         try {
-            $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $headers -Body (Json $body)
-            $content = [string]$response.choices[0].message.content
+            foreach ($pathToClear in @($outputPath, $stdoutPath, $stderrPath)) {
+                if (Test-Path -LiteralPath $pathToClear) {
+                    Remove-Item -LiteralPath $pathToClear -Force
+                }
+            }
+
+            $cmdLine = ('type "{0}" | "{1}" exec -m "{2}" --skip-git-repo-check -C "{3}" -o "{4}" - >nul 2>"{5}"' -f $promptPath, $ResolvedCodexCommand, $Model, $repoRoot, $outputPath, $stderrPath)
+            & cmd.exe /d /c $cmdLine | Out-Null
+            if (-not (Test-Path -LiteralPath $outputPath)) {
+                throw "Codex output file was not created: $outputPath"
+            }
+
+            $content = Get-Content -LiteralPath $outputPath -Raw -Encoding UTF8
             return (ConvertFrom-Json -InputObject (Strip-JsonFence $content))
         } catch {
             if ($attempt -ge $MaxRetries) { throw }
@@ -331,110 +346,28 @@ function Get-LlmAugmentation($Row, [int]$VariantCount) {
     $caseId = [string]$Row.케이스ID
     $cachePath = Get-CachePath -CaseId $caseId -ModelName $Model -VariantCount $VariantCount
     if (-not $DisableCache -and (Test-Path -LiteralPath $cachePath)) {
-        return (ConvertFrom-Json -InputObject (Get-Content -LiteralPath $cachePath -Raw -Encoding UTF8))
+        $cachedRaw = Get-Content -LiteralPath $cachePath -Raw -Encoding UTF8
+        if (-not [string]::IsNullOrWhiteSpace($cachedRaw)) {
+            try {
+                return (ConvertFrom-Json -InputObject $cachedRaw)
+            } catch {
+                Remove-Item -LiteralPath $cachePath -Force -ErrorAction SilentlyContinue
+            }
+        } else {
+            Remove-Item -LiteralPath $cachePath -Force -ErrorAction SilentlyContinue
+        }
     }
 
-    $systemPrompt = @"
-당신은 한국어 STT 상담 데이터셋 생성기입니다.
-반드시 JSON만 출력합니다.
-사실 보존이 최우선입니다.
-금액, 날짜, 건수, 기관명, 채널, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
-마스킹 값은 **** 형태를 유지합니다.
-출력 스키마:
-{
-  "intent_type": "string",
-  "answer_gold": "string",
-  "answer_standardized": "string",
-  "answer_short": "string",
-  "summary_structured": {
-    "customer_intent": "string",
-    "agent_action": "string",
-    "result": "string",
-    "short_text": "string",
-    "standard_text": "string",
-    "slot_summary": {
-      "request_type": "string",
-      "target_product": "string",
-      "agent_action": "string",
-      "result": "string"
-    }
-  },
-  "keyword_slots": {
-    "intent_type": "string",
-    "request_type": "string",
-    "contract_count": "string",
-    "payment_amounts": ["string"],
-    "date_values": ["string"],
-    "institutions": ["string"],
-    "channels": ["string"],
-    "documents": ["string"],
-    "actions": ["string"],
-    "outcomes": ["string"],
-    "product_names": ["string"],
-    "keywords": ["string"]
-  },
-  "keyword_labels": [
-    {
-      "keyword": "string",
-      "canonical": "string",
-      "type": "intent|channel|entity|domain|outcome|raw",
-      "source": "llm",
-      "confidence": 0.0,
-      "evidence_span": "string"
-    }
-  ],
-  "utterance_labels": [
-    {
-      "utterance_id": 1,
-      "speaker": "상담사|고객|미상",
-      "label": "고객요청|상담사확인질문|본인인증|처리안내|결과통보|불만제기|감정표현|일반발화",
-      "text": "string"
-    }
-  ],
-  "variants": [
-    {
-      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
-      "answer_style": "gold|short",
-      "stt_text": "string",
-      "answer_gold": "string",
-      "answer_standardized": "string",
-      "answer_short": "string"
-    }
-  ]
-}
-variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
-clean은 원문 의미를 유지한 정제본입니다.
-paraphrase_*는 의미 보존형 표현 변경입니다.
-layout_spacing은 띄어쓰기/구두점 중심의 표면 변화입니다.
-filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
-summary_short는 요청되지 않으면 포함하지 않습니다.
-"@
+    $systemPrompt = Get-Content -LiteralPath (Resolve-RepoPath $SystemPromptPath) -Raw -Encoding UTF8
+    $userTemplate = Get-Content -LiteralPath (Resolve-RepoPath $UserPromptTemplatePath) -Raw -Encoding UTF8
+    $userPrompt = $userTemplate.Replace("__CASE_ID__", [string]$Row.케이스ID).
+        Replace("__VARIANT_COUNT__", [string]$VariantCount).
+        Replace("__STT_TEXT__", [string]$Row.STT전문).
+        Replace("__LLM_ANSWER__", [string]$Row.LLM답변).
+        Replace("__ANSWER_GOLD__", [string]$Row.정답지).
+        Replace("__KEYWORD_HINT__", [string]$Row.키워드)
 
-    $userPrompt = @"
-케이스ID: $($Row.케이스ID)
-생성 variant 수: $VariantCount
-
-[원본 STT]
-$($Row.STT전문)
-
-[기존 LLM답변 힌트]
-$($Row.LLM답변)
-
-[사람 정답지]
-$($Row.정답지)
-
-[키워드 힌트]
-$($Row.키워드)
-
-요구사항:
-1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
-2. variants는 정확히 $VariantCount 개 생성합니다.
-3. answer_gold, answer_standardized, answer_short도 variant별로 함께 바꿉니다.
-4. 키워드/슬롯/요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
-5. JSON 외 텍스트를 절대 포함하지 마세요.
-"@
-
-    $payload = Invoke-OpenAIJson -SystemPrompt $systemPrompt -UserPrompt $userPrompt
+    $payload = Invoke-CodexChatJson -SystemPrompt $systemPrompt -UserPrompt $userPrompt -CaseId $caseId
     if (-not $DisableCache) {
         New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
         Set-Content -LiteralPath $cachePath -Value (Json $payload) -Encoding UTF8
@@ -568,5 +501,25 @@ Write-Output ("Generated base_clean.csv rows={0}" -f $baseClean.Count)
 Write-Output ("Generated base_normalized.csv rows={0}" -f $baseNormalized.Count)
 Write-Output ("Generated augmented_dataset.csv rows={0}" -f $augmented.Count)
 Write-Output ("Generated augmented_validated.csv rows={0}" -f $validated.Count)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

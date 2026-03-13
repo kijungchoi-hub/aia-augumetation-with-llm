@@ -1,0 +1,185 @@
+﻿당신은 한국어 STT 상담 데이터셋 생성기입니다.
+반드시 JSON만 출력합니다.
+사실 보존이 최우선입니다.
+금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
+마스킹 값은 **** 형태를 유지합니다.
+출력 스키마:
+{
+  "intent_type": "string",
+  "answer_gold": "string",
+  "answer_standardized": "string",
+  "answer_short": "string",
+  "summary_structured": {
+    "customer_intent": "string",
+    "agent_action": "string",
+    "result": "string",
+    "short_text": "string",
+    "standard_text": "string",
+    "slot_summary": {
+      "request_type": "string",
+      "target_product": "string",
+      "agent_action": "string",
+      "result": "string"
+    }
+  },
+  "keyword_slots": {
+    "intent_type": "string",
+    "request_type": "string",
+    "contract_count": "string",
+    "payment_amounts": ["string"],
+    "date_values": ["string"],
+    "institutions": ["string"],
+    "channels": ["string"],
+    "documents": ["string"],
+    "actions": ["string"],
+    "outcomes": ["string"],
+    "product_names": ["string"],
+    "keywords": ["string"]
+  },
+  "keyword_labels": [
+    {
+      "keyword": "string",
+      "canonical": "string",
+      "type": "intent|channel|entity|domain|outcome|raw",
+      "source": "llm",
+      "confidence": 0.0,
+      "evidence_span": "string"
+    }
+  ],
+  "utterance_labels": [
+    {
+      "utterance_id": 1,
+      "speaker": "상담사|고객|미상",
+      "label": "고객요청|상담사확인|서류안내|처리안내|결과통보|불만제기|감정표현|일반발화",
+      "text": "string"
+    }
+  ],
+  "variants": [
+    {
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
+      "answer_style": "gold|short",
+      "stt_text": "string",
+      "answer_gold": "string",
+      "answer_standardized": "string",
+      "answer_short": "string"
+    }
+  ]
+}
+variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
+clean은 원문 의미를 유지한 정제본입니다.
+paraphrase_*는 의미 보존형 표현 변경입니다.
+layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
+filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
+summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+
+케이스ID: 66
+생성 variant 수: 5
+
+[원본 STT]
+상담사: 반갑습니다. 입니다.
+고객: 예 수고하십니다.
+상담사: 네 안녕하십니까?
+고객: 그
+고객: 내가
+고객: 주소를 안 바꿨네요.
+상담사: 정보를 한번 여쭙
+고객: 예나
+상담사: 네 도와드리겠습니다.
+고객: 서울 서울 주소로 돼 있어 가지고
+고객: 핸드폰으로 문자 들어온 거 보고 전화하거든요.
+상담사: 네.
+상담사: 본인 계약서는
+상담사: 합칠성 고객님 본인 분 맞으세요?
+고객: 예.
+상담사: 네 생년월일 말씀 부탁드리겠습니다.
+고객: 530915요.
+상담사: 네 휴대폰 번호 0104113회 다음 4자리 어떻게 되세요?
+고객: 몇 살 쯤에요?
+상담사: 확인 감사합니다.
+상담사: 지금 뚝섬로로 되어있으신데 변경하실 주소 1번 말씀해주세요. 고객님.
+고객: 예 양사시.
+상담사: 네.
+고객: 물건 뭐
+상담사: 물금읍이요?
+고객: 예.
+상담사: 네.
+고객: 오동로
+상담사: 오봉로.
+고객: 예 29
+상담사: 버마떡.
+상담사: 범어덕산타운 맞으세요?
+고객: 예 예.
+상담사: 네.
+고객: 백산동 천산대 1호요.
+상담사: 네 주소 확인하겠습니다. 경남 양산시 물금읍 오봉로 29, *
+상담사: 엄호덕산타운103동에 1301호 맞으시죠?
+고객: 예.
+고객: 네 예예.
+상담사: 네네 확인되셨고요. 변경 처리 도와드렸습니다.
+고객: 예.
+상담사: 네 다른
+고객: 근데 이거 저기
+상담사: 네.
+고객: 뇌종증 안 걸리면 돈이 안 나오는 거예요.
+상담사: 지금 가입하셨던 상품이 하나로 건강보험이라는 상품인데요.
+상담사: 이 상품은 이제 급성심근경색증 뇌출혈 진단비 발생하는 상품이세요.
+고객: 예.
+고객: 네 그냥 수용가 번호를
+고객: 상품 없는 경우에요.
+상담사: 네 뭐 저축성은 아니기 때문에 따로 뭐 발생하는 금액이 있진 않죠. 고객님.
+상담사: 고객님 80세까지 보장 혜택을 받는 거죠.
+고객: 40대가 40, ******
+고객: 아무 거기 없는 거를
+상담사: 이제 종료가 되시는 거예요. 네.
+고객: 음
+고객: 그 그거는 대출은 안 되는 거예요?
+상담사: 대출이요?
+고객: 예.
+상담사: 대출이 가능하신 상품은 아니세요.
+고객: 아니에요.
+상담사: 네.
+고객: 안녕하세요.
+고객: 어 그 첫 번째 거 100년에는
+상담사: 보장상 상품이라서 급성 심근경색증 뇌출혈 80세까지 각각 1000만원씩 보장받으실 수 있는 상품이시니까요.
+상담사: 잘 유지해주시면 될 것 같습니다. 고객님.
+고객: 예.
+고객: 배우자가 되려해서는 상관없는 거예요?
+상담사: 피바운사님은 고객님이니까요. 고객님에 대한 상품이라고 보시면 돼요.
+고객: 네.
+고객: 예.
+고객: 음 알았어요.
+상담사: 네 감사합니다.
+고객: 네 수고하세요.
+상담사: 네 감사합니다.
+
+[기존 LLM 응답 힌트]
+고객은 서울 주소로 등록된 계약 정보를 변경 요청하였으며, 현재 주소는 경남 양산시 물금읍 오봉로 29 범어덕산타운 103동 1301호로 변경 처리됨.  
+고객은 건강보험 상품을 가입하였으며, 이 상품은 급성심근경색증 및 뇌출혈 진단 시 80세까지 각각 1000만원 보장되는 보장성 상품임.  
+이 상품은 저축성은 아니며, 대출이 불가능함.  
+고객은 본인 계약자이며, 피보험자는 배우자일 수 있음.
+
+[정답지]
+주소변경
+하나로 건강보험은 보장성 상품으로 대출 어려우며
+급성심근경색증, 뇌출혈 진단비 80세까지 각각 천만원씩 보장되는 상품이며 본인이 해당되는 상품임안내
+
+
+[키워드 힌트]
+주소변경
+하나로건강보험
+보장성상품
+대출어려움
+급성심근경색증 진단비
+뇌출혈 진단비
+80세까지
+천만원 보장
+본인 해당
+
+요구사항:
+1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
+2. variants는 정확히 5개 생성합니다.
+3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
+4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
+5. JSON 외 텍스트는 절대 포함하지 마세요.
+

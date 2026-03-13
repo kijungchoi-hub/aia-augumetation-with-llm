@@ -1,0 +1,129 @@
+﻿당신은 한국어 STT 상담 데이터셋 생성기입니다.
+반드시 JSON만 출력합니다.
+사실 보존이 최우선입니다.
+금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
+마스킹 값은 **** 형태를 유지합니다.
+출력 스키마:
+{
+  "intent_type": "string",
+  "answer_gold": "string",
+  "answer_standardized": "string",
+  "answer_short": "string",
+  "summary_structured": {
+    "customer_intent": "string",
+    "agent_action": "string",
+    "result": "string",
+    "short_text": "string",
+    "standard_text": "string",
+    "slot_summary": {
+      "request_type": "string",
+      "target_product": "string",
+      "agent_action": "string",
+      "result": "string"
+    }
+  },
+  "keyword_slots": {
+    "intent_type": "string",
+    "request_type": "string",
+    "contract_count": "string",
+    "payment_amounts": ["string"],
+    "date_values": ["string"],
+    "institutions": ["string"],
+    "channels": ["string"],
+    "documents": ["string"],
+    "actions": ["string"],
+    "outcomes": ["string"],
+    "product_names": ["string"],
+    "keywords": ["string"]
+  },
+  "keyword_labels": [
+    {
+      "keyword": "string",
+      "canonical": "string",
+      "type": "intent|channel|entity|domain|outcome|raw",
+      "source": "llm",
+      "confidence": 0.0,
+      "evidence_span": "string"
+    }
+  ],
+  "utterance_labels": [
+    {
+      "utterance_id": 1,
+      "speaker": "상담사|고객|미상",
+      "label": "고객요청|상담사확인|서류안내|처리안내|결과통보|불만제기|감정표현|일반발화",
+      "text": "string"
+    }
+  ],
+  "variants": [
+    {
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
+      "answer_style": "gold|short",
+      "stt_text": "string",
+      "answer_gold": "string",
+      "answer_standardized": "string",
+      "answer_short": "string"
+    }
+  ]
+}
+variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
+clean은 원문 의미를 유지한 정제본입니다.
+paraphrase_*는 의미 보존형 표현 변경입니다.
+layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
+filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
+summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+
+케이스ID: 390
+생성 variant 수: 5
+
+[원본 STT]
+상담사: 반갑습니다.조은실입니다.
+고객: 저 자동이체 날짜 때문에 여쭤볼려구여.
+상담사: 아 네 자동이체 일주일 말씀이에요?
+고객: 네
+상담사: 네 고객님 계약자님 본인 맞으십니까?
+고객: 네 맞아요.
+상담사: 네 핸드폰 번호 010 9211 뒷자리 어떻게 되십니까?
+고객: 4830번이요.
+상담사: 네 생년월일 앞자리가 어떻게 되십니까?
+고객: 760720이요.
+상담사: 네 고객님 확인 감사드립니다. 이체일은 25일이에요 고객님.
+고객: 이거를 만약에 5일 자로 바꾸게 되면요.
+상담사: 네네
+고객: 이번 달은 지났잖아요.
+상담사: 네네
+고객: 그럼 언제 나가요 통장에서?
+상담사: 어 인제 고객님.
+상담사: 이번 달에 이체를 5일로 변경을 하게 되며 이번 달에는 오늘 변경을 한다라고 하면 10일날 출금 처리가 되실 겁니다.
+고객: 아 10일날 나가요?
+상담사: 네 네 그렇습니다.
+고객: 아 아 네 이거 앱으로도 변경 가능한거죠?
+상담사: 네 앱으로도 변경 가능합니다.
+고객: 아 네. 일단 그러시면 저희가 정확한 안내를 위해서 실례지만 학생 회원님 아이디 말씀 부탁드리겠습니다.
+고객: 아 네 알겠습니다.
+상담사: 네 고맙습니다 감사합니다.
+고객: 네.
+고객: 감사합니다.
+
+[기존 LLM 응답 힌트]
+고객은 계약자 본인으로, 자동이체일을 25일에서 5일로 변경 요청함. 변경 시 이번 달(현재 달)에는 10일에 출금 처리됨. 앱을 통해도 변경 가능함.
+
+[정답지]
+이체일문의/ 
+자동이체 이체일 25일이며 5일로 변경시 5일이 지나서 10일에 출금됨/ 앱으로 변경가능함
+
+[키워드 힌트]
+자동이체
+이체일25일
+이체일5일변경
+5일경과
+10일출금
+앱변경가능
+
+요구사항:
+1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
+2. variants는 정확히 5개 생성합니다.
+3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
+4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
+5. JSON 외 텍스트는 절대 포함하지 마세요.
+

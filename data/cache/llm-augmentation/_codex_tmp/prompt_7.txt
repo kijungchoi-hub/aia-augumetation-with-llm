@@ -1,0 +1,127 @@
+﻿당신은 한국어 STT 상담 데이터셋 생성기입니다.
+반드시 JSON만 출력합니다.
+사실 보존이 최우선입니다.
+금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
+마스킹 값은 **** 형태를 유지합니다.
+출력 스키마:
+{
+  "intent_type": "string",
+  "answer_gold": "string",
+  "answer_standardized": "string",
+  "answer_short": "string",
+  "summary_structured": {
+    "customer_intent": "string",
+    "agent_action": "string",
+    "result": "string",
+    "short_text": "string",
+    "standard_text": "string",
+    "slot_summary": {
+      "request_type": "string",
+      "target_product": "string",
+      "agent_action": "string",
+      "result": "string"
+    }
+  },
+  "keyword_slots": {
+    "intent_type": "string",
+    "request_type": "string",
+    "contract_count": "string",
+    "payment_amounts": ["string"],
+    "date_values": ["string"],
+    "institutions": ["string"],
+    "channels": ["string"],
+    "documents": ["string"],
+    "actions": ["string"],
+    "outcomes": ["string"],
+    "product_names": ["string"],
+    "keywords": ["string"]
+  },
+  "keyword_labels": [
+    {
+      "keyword": "string",
+      "canonical": "string",
+      "type": "intent|channel|entity|domain|outcome|raw",
+      "source": "llm",
+      "confidence": 0.0,
+      "evidence_span": "string"
+    }
+  ],
+  "utterance_labels": [
+    {
+      "utterance_id": 1,
+      "speaker": "상담사|고객|미상",
+      "label": "고객요청|상담사확인|서류안내|처리안내|결과통보|불만제기|감정표현|일반발화",
+      "text": "string"
+    }
+  ],
+  "variants": [
+    {
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
+      "answer_style": "gold|short",
+      "stt_text": "string",
+      "answer_gold": "string",
+      "answer_standardized": "string",
+      "answer_short": "string"
+    }
+  ]
+}
+variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
+clean은 원문 의미를 유지한 정제본입니다.
+paraphrase_*는 의미 보존형 표현 변경입니다.
+layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
+filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
+summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+
+케이스ID: 7
+생성 variant 수: 5
+
+[원본 STT]
+상담사: 반갑습니다. 박주영입니다.
+고객: 네 수고하십니다 다름이 아니고요.
+상담사: 네 의원님.
+고객: 그 제가 보험을 9월 2일 날 가입을 가입을 했거든요.
+상담사: 네.
+고객: 아이들 했는데 고걸 변경을 해가지고 원스톱 종합건강보험 2형이라는 그걸로 변경을 할라 그래요.
+상담사: 네.
+고객: 83490원 불입금 되는 거
+상담사: 고객님 그러면 최정숙 계약자님 본인 맞으시죠 생년월일은 한 6자리 어떻게 되세요?
+고객: 네 네.
+고객: 맞아요.
+고객: 네 55년 11월 7일
+상담사: 네 그러시면 고객님 부분에 대해서 전문 모집인 그 방회장님을 통해서 가입해 주셨는데 방회장님에게 연락드려서 다시 이 상품에 대해서 재가입 안내드릴 수 있도록 통화 좀 전달해 드릴게요.
+고객: 네 네.
+고객: 네 네.
+상담사: 네 감사합니다.
+고객: 그러고요 고걸 제가 그 이제 기존 그거는 철회한다고 그랬는데 철회를 안 하고 이걸 변경을 해가지고 진행을 해 주시면 좋겠어요.
+상담사: 우선은 이거를 반송을 하시고 새로운 상품으로 다시 안내를 받아보셔야 될 것 같거든요.
+상담사: 그리고 계약 건 반송 요청 및 해당 그 모집인이 연락을 드릴 수 있도록 1번 통화 요청해드릴게요 고객님.
+고객: 네 알았습니다.
+상담사: 네 감사합니다.
+
+[기존 LLM 응답 힌트]
+고객은 9월 2일에 아이들을 대상으로 보험을 가입했으며, 기존 상품을 철회하지 않고 원스톱 종합건강보험 2형으로 변경하고자 함. 계약자명은 최정숙, 생년월일은 1955년 11월 7일. 기존 가입은 전문 모집인(방회장)을 통해 이루어졌으며, 변경을 위해 계약 건 반송 후 재안내가 필요함. 상담사가 모집인에게 연락 전달 및 재가입 안내를 요청함.
+
+[정답지]
+9월 2일 가입하였으나 원스톱종합건강보험 2형 83490원으로 변경원하여 문의하였으며 모집인 방**통해 가입하였기에 모집인이 연락드려 상품에 대해 재가입안내드리도록 통화요청하겠음.
+기존건 철회하기로 하였으나 철회하지 않고 변경해서 진행하고 싶다 언급함에 이 상품을 반송 후 새로운 상품으로 안내를 받아보셔야할것같다 안내함.
+
+[키워드 힌트]
+9월2일 가입
+원스톱종합건강보험2형
+83490원
+변경문의
+모집인
+재가입안내통화요청
+기존건철회
+철회미실시
+상품반송
+새상품안내
+
+요구사항:
+1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
+2. variants는 정확히 5개 생성합니다.
+3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
+4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
+5. JSON 외 텍스트는 절대 포함하지 마세요.
+

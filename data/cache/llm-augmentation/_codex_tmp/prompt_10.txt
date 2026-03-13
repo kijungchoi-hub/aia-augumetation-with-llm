@@ -1,0 +1,136 @@
+﻿당신은 한국어 STT 상담 데이터셋 생성기입니다.
+반드시 JSON만 출력합니다.
+사실 보존이 최우선입니다.
+금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
+마스킹 값은 **** 형태를 유지합니다.
+출력 스키마:
+{
+  "intent_type": "string",
+  "answer_gold": "string",
+  "answer_standardized": "string",
+  "answer_short": "string",
+  "summary_structured": {
+    "customer_intent": "string",
+    "agent_action": "string",
+    "result": "string",
+    "short_text": "string",
+    "standard_text": "string",
+    "slot_summary": {
+      "request_type": "string",
+      "target_product": "string",
+      "agent_action": "string",
+      "result": "string"
+    }
+  },
+  "keyword_slots": {
+    "intent_type": "string",
+    "request_type": "string",
+    "contract_count": "string",
+    "payment_amounts": ["string"],
+    "date_values": ["string"],
+    "institutions": ["string"],
+    "channels": ["string"],
+    "documents": ["string"],
+    "actions": ["string"],
+    "outcomes": ["string"],
+    "product_names": ["string"],
+    "keywords": ["string"]
+  },
+  "keyword_labels": [
+    {
+      "keyword": "string",
+      "canonical": "string",
+      "type": "intent|channel|entity|domain|outcome|raw",
+      "source": "llm",
+      "confidence": 0.0,
+      "evidence_span": "string"
+    }
+  ],
+  "utterance_labels": [
+    {
+      "utterance_id": 1,
+      "speaker": "상담사|고객|미상",
+      "label": "고객요청|상담사확인|서류안내|처리안내|결과통보|불만제기|감정표현|일반발화",
+      "text": "string"
+    }
+  ],
+  "variants": [
+    {
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
+      "answer_style": "gold|short",
+      "stt_text": "string",
+      "answer_gold": "string",
+      "answer_standardized": "string",
+      "answer_short": "string"
+    }
+  ]
+}
+variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
+clean은 원문 의미를 유지한 정제본입니다.
+paraphrase_*는 의미 보존형 표현 변경입니다.
+layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
+filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
+summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+
+케이스ID: 10
+생성 variant 수: 5
+
+[원본 STT]
+상담사: 반갑습니다. 김지영입니다.
+고객: 아 네네. 저희가 자세한 안내를 위해서 회원님 정보 확인이 필요한데요.
+고객: 예 수고하십니다.
+상담사: 네 감사합니다.
+고객: 예 다름이 아니고
+상담사: 네 네.
+고객: 저는
+고객: 소국영이라는 사람인데요.
+상담사: 네 고객님 계약자 본인 맞으시죠?
+고객: 네.
+상담사: 네 고객님 생년월일 어떻게 되십니까?
+고객: 5094
+상담사: 네 휴대폰이 010 3535에 몇 번이세요?
+고객: 2219
+상담사: 네
+상담사: 해지 남긴 게 있으신 것 같은데 맞으세요?
+고객: 예?
+상담사: 어떤 게 궁금하셨어요 어머니?
+고객: 그 해양하려고 전화드렸거든요.
+상담사: 아 그렇죠. 그
+상담사: 금요일날 해지 콜백 남겨주신 게 있으신데요. 예 죄송한데 저희가 해지 부서에서 순차적으로 전화를 드리다 보니까 금요일날 다 전화를 못 드리는 것 같고요.
+고객: 예예 예.
+고객: 예 예.
+상담사: 오늘 부서에서 고객님 휴대폰을 순차적으로 전화 드릴 거예요 문의.
+고객: 예.
+고객: 오후 그 전화가
+고객: 안 와서 전화 드렸는데요.
+상담사: 그렇죠. 근데 지금 연결된 부서도 해지 부서가 아니어서
+상담사: 지금 제가 해지 업무 처리를 해드릴 수가 없고요.
+상담사: 빠른 연락 요청하신다고 하면 전달드릴게요 고객님.
+고객: 예 알았어요.
+상담사: 네 감사합니다.
+고객: 테레비전으로
+고객: 빠지지 뭐
+고객: 왜 자꾸 저리 핑계
+
+[기존 LLM 응답 힌트]
+고객은 소국영으로, 계약자 본인임을 확인하였으며, 생년월일은 1950년 9월 4일, 휴대폰번호는 010-3535-****이다. 고객은 금요일에 해지 콜백을 남긴 바 있으며, 해당 요청은 해지 부서에서 순차적으로 전화를 드리는 중이나 금요일에 모두 전화를 드리지 못한 상황임을 안내받았다. 고객은 오후 전화가 오지 않아 직접 전화를 드렸으며, 현재 상담사가 해지 업무 처리를 할 수 없어 빠른 연락 요청을 전달해줄 것을 요청하였다.
+
+[정답지]
+해지 상담 원하나 아직 연락이 없어 연락하였고 해지 콜백 남겨져 있으며 빠른 상담 요청으로 전달함
+
+[키워드 힌트]
+해지 상담
+연락 없음
+연락 시도
+해지 콜백 남김
+빠른 상담 요청
+전달
+
+요구사항:
+1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
+2. variants는 정확히 5개 생성합니다.
+3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
+4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
+5. JSON 외 텍스트는 절대 포함하지 마세요.
+

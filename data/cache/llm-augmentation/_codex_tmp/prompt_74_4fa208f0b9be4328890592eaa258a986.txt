@@ -1,0 +1,165 @@
+﻿당신은 한국어 STT 상담 데이터셋 생성기입니다.
+반드시 JSON만 출력합니다.
+사실 보존이 최우선입니다.
+금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
+마스킹 값은 **** 형태를 유지합니다.
+출력 스키마:
+{
+  "intent_type": "string",
+  "answer_gold": "string",
+  "answer_standardized": "string",
+  "answer_short": "string",
+  "summary_structured": {
+    "customer_intent": "string",
+    "agent_action": "string",
+    "result": "string",
+    "short_text": "string",
+    "standard_text": "string",
+    "slot_summary": {
+      "request_type": "string",
+      "target_product": "string",
+      "agent_action": "string",
+      "result": "string"
+    }
+  },
+  "keyword_slots": {
+    "intent_type": "string",
+    "request_type": "string",
+    "contract_count": "string",
+    "payment_amounts": ["string"],
+    "date_values": ["string"],
+    "institutions": ["string"],
+    "channels": ["string"],
+    "documents": ["string"],
+    "actions": ["string"],
+    "outcomes": ["string"],
+    "product_names": ["string"],
+    "keywords": ["string"]
+  },
+  "keyword_labels": [
+    {
+      "keyword": "string",
+      "canonical": "string",
+      "type": "intent|channel|entity|domain|outcome|raw",
+      "source": "llm",
+      "confidence": 0.0,
+      "evidence_span": "string"
+    }
+  ],
+  "utterance_labels": [
+    {
+      "utterance_id": 1,
+      "speaker": "상담사|고객|미상",
+      "label": "고객요청|상담사확인|서류안내|처리안내|결과통보|불만제기|감정표현|일반발화",
+      "text": "string"
+    }
+  ],
+  "variants": [
+    {
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
+      "answer_style": "gold|short",
+      "stt_text": "string",
+      "answer_gold": "string",
+      "answer_standardized": "string",
+      "answer_short": "string"
+    }
+  ]
+}
+variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
+clean은 원문 의미를 유지한 정제본입니다.
+paraphrase_*는 의미 보존형 표현 변경입니다.
+layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
+filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
+summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+
+케이스ID: 74
+생성 variant 수: 5
+
+[원본 STT]
+고객: 여보세요.
+상담사: 네 인증 번호 몇 번이십니까?
+고객: 어 문자가 아
+고객: 안 왔는데요 지금
+고객: 봤는데.
+상담사: 어 들어갔는데 고객님 그러면 신분증으로 인증할게요 주민등록증 앞면에 발급일자 어떻게 되십니까?
+고객: 예.
+고객: 아이고 재수생인데.
+고객: 잠 잠깐만요.
+상담사: 네.
+고객: 여보세요.
+상담사: 네.
+고객: 어 2000년 4월 14일인데요.
+상담사: 2000년 4월 14일 확인하겠습니다.
+상담사: 지금 행안부가 인정하는데 지금 시간이 조금 지체가 되고 있고 어 예 맞아요 본인 인증 완료되었고 미지급된 연금 먼저 접수하겠습니다 고객님의 국적과 거주지가 동일하게 1동 맞으시죠?
+고객: 네.
+고객: 예.
+고객: 네.
+고객: 예 예.
+상담사: 다른 나라에 세금 납부하는 건 없으시고요?
+고객: 네 없는데요.
+상담사: 네 증권번호 590000416번에서 미지급된 연금 440.73달러 접수 진행해 드렸고 말씀하신 신한은행 계좌로 저희가 신청을 해드렸어요 오늘 네 당일 중으로 입금 처리가 될 거고 그리고 매달 이제 자동으로 입금 처리될 수 있도록 신청을 해드렸습니다.
+고객: 네.
+고객: 네.
+상담사: 그럼 다시 1번 내년에 제가 문자 받으시면 네
+고객: 네 네.
+상담사: 내년 8월 31일 이후로 항상 1번 더 신청 부탁드리겠습니다.
+고객: 예.
+고객: 예예.
+고객: 아이고 예 아유 이 참 불쌍하네요.
+상담사: 네.
+상담사: 아유 불편하시죠 이까 보증 기간이 끝났기 때문에 종신형이라 매년 재신청이 필요한 점 양해 부탁드리겠습니다.
+고객: 네.
+고객: 예.
+고객: 예.
+고객: 예.
+고객: 예.
+상담사: 고객님 건강 조심하세요.
+고객: 예 예 수고하세요.
+상담사: 네 고맙습니다.
+고객: 예 예.
+
+[기존 LLM 응답 힌트]
+고객은 2000년 4월 14일 발급의 주민등록증을 이용해 본인 인증을 완료하였으며, 국적과 거주지가 동일하고 다른 나라에 세금 납부 이력이 없음. 증권번호 59000****번의 미지급된 연금 440.73달러를 신한은행 계좌로 당일 중 입금 처리 및 매달 자동 입금 신청 완료. 내년 8월 31일 이후 매년 1회 재신청 필요.
+
+[정답지]
+sms 인증번호 안왔다고 하여 신분증 인증으로 대체함
+국적과 실제거주국 한국 확인, 타국납세여부 아니요 확인
+증번 59000***에서 440.73달러 신한계좌로 신청함
+당일중으로 입금예정이며 다음달부터는 매달 자동으로 입금되게 신청해드림 안내. 
+내년에 문자 받으시면 8.31일이후 한번더 신청해달라고하니 불편하다고하심
+보증기간이 끝나서 종신형이라 매년 재신청이 필요한점 양해 부탁드림
+
+[키워드 힌트]
+sms인증번호
+미도착
+신분증인증
+대체
+국적한국
+거주국한국
+확인
+타국납세여부
+없음
+증번59000***
+440.73달러
+신한계좌신청
+당일입금
+예정
+다음달부터
+자동입금신청
+내년에 문자받고
+8.31일이후
+재신청요청
+불편
+보증기간종료
+종신형
+매년재신청
+필요
+
+요구사항:
+1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
+2. variants는 정확히 5개 생성합니다.
+3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
+4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
+5. JSON 외 텍스트는 절대 포함하지 마세요.
+

@@ -1,0 +1,139 @@
+﻿당신은 한국어 STT 상담 데이터셋 생성기입니다.
+반드시 JSON만 출력합니다.
+사실 보존이 최우선입니다.
+금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
+마스킹 값은 **** 형태를 유지합니다.
+출력 스키마:
+{
+  "intent_type": "string",
+  "answer_gold": "string",
+  "answer_standardized": "string",
+  "answer_short": "string",
+  "summary_structured": {
+    "customer_intent": "string",
+    "agent_action": "string",
+    "result": "string",
+    "short_text": "string",
+    "standard_text": "string",
+    "slot_summary": {
+      "request_type": "string",
+      "target_product": "string",
+      "agent_action": "string",
+      "result": "string"
+    }
+  },
+  "keyword_slots": {
+    "intent_type": "string",
+    "request_type": "string",
+    "contract_count": "string",
+    "payment_amounts": ["string"],
+    "date_values": ["string"],
+    "institutions": ["string"],
+    "channels": ["string"],
+    "documents": ["string"],
+    "actions": ["string"],
+    "outcomes": ["string"],
+    "product_names": ["string"],
+    "keywords": ["string"]
+  },
+  "keyword_labels": [
+    {
+      "keyword": "string",
+      "canonical": "string",
+      "type": "intent|channel|entity|domain|outcome|raw",
+      "source": "llm",
+      "confidence": 0.0,
+      "evidence_span": "string"
+    }
+  ],
+  "utterance_labels": [
+    {
+      "utterance_id": 1,
+      "speaker": "상담사|고객|미상",
+      "label": "고객요청|상담사확인|서류안내|처리안내|결과통보|불만제기|감정표현|일반발화",
+      "text": "string"
+    }
+  ],
+  "variants": [
+    {
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
+      "answer_style": "gold|short",
+      "stt_text": "string",
+      "answer_gold": "string",
+      "answer_standardized": "string",
+      "answer_short": "string"
+    }
+  ]
+}
+variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
+clean은 원문 의미를 유지한 정제본입니다.
+paraphrase_*는 의미 보존형 표현 변경입니다.
+layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
+filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
+summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+
+케이스ID: 366
+생성 variant 수: 5
+
+[원본 STT]
+상담사: 반갑습니다. 입니다.
+고객: 예.
+고객: 제가요.
+상담사: 네.
+고객: 저기 그 시발점 수학 그 수학 그 저기
+고객: 암 보험 하나 들은 거 있는데요.
+상담사: 네 고객님.
+고객: 아 네. 확인해 주셔서 감사합니다. 아 그 혹시 환불하시는 사유는 어떻게 되시는 걸까요?
+고객: 갑상선 암이래요 그래서 병원에 입원했거든요.
+상담사: 아 그러세요 네.
+고객: 네.
+고객: 김명희.
+상담사: 어.
+상담사: 네 고객님 그러시면 제가 정보 확인 먼저 하겠습니다 계약자님 김영희 님이시고 저희 등록된 연락처가 010, **************
+고객: 예.
+고객: 5324
+상담사: 생년월일은 어떻게 되십니까?
+고객: 500602
+상담사: 네 확인되었습니다.
+고객: 예.
+상담사: 네 지금 암 보험 있으십니다. 여기에 그러면.
+상담사: 보험금 청구 문의실까요?
+고객: 예 그래서
+상담사: 네 네.
+고객: 보험 청구할 때 서류가 뭐뭐 필요한가
+상담사: 아 네 고객님 그러시면 이제 제가 이제 고객님 이제.
+상담사: 그 상담 가능한 부서가 별도로 있습니다 그 부서에서 고객님께 전화 갈 겁니다 그럼 그때 서류랑 보내는 방법이랑 다 안내받으시면 되겠습니다.
+상담사: 순차적으로 전화 갈 겁니다 고객님.
+고객: 예.
+고객: 예 그럼 기다리고 있을까요?
+상담사: 네.
+상담사: 그래서 된다고.
+고객: 네.
+상담사: 네 전화 끊고 기다리시면 전화 갈 겁니다. 순차적으로 전화 갈 겁니다.
+고객: 예.
+고객: 예.
+상담사: 네 감사합니다.
+고객: 네.
+상담사: 네.
+고객: 네.
+
+[기존 LLM 응답 힌트]
+고객은 김명희로, 계약자 김영희의 암 보험에 가입되어 있으며, 갑상선 암 진단으로 병원 입원한 상태이다. 보험금 청구를 위해 서류 요청이 필요하며, 상담 가능한 부서에서 순차적으로 전화를 통한 안내를 받을 예정이다.
+
+[정답지]
+보험금 청구문의/
+해당부서에서 전화드릴수있게 요청해드림
+
+[키워드 힌트]
+보험금 청구
+전화 요청
+해당부서
+
+요구사항:
+1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
+2. variants는 정확히 5개 생성합니다.
+3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
+4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
+5. JSON 외 텍스트는 절대 포함하지 마세요.
+

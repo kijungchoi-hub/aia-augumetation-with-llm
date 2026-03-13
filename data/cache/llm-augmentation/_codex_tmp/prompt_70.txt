@@ -1,0 +1,157 @@
+﻿당신은 한국어 STT 상담 데이터셋 생성기입니다.
+반드시 JSON만 출력합니다.
+사실 보존이 최우선입니다.
+금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
+마스킹 값은 **** 형태를 유지합니다.
+출력 스키마:
+{
+  "intent_type": "string",
+  "answer_gold": "string",
+  "answer_standardized": "string",
+  "answer_short": "string",
+  "summary_structured": {
+    "customer_intent": "string",
+    "agent_action": "string",
+    "result": "string",
+    "short_text": "string",
+    "standard_text": "string",
+    "slot_summary": {
+      "request_type": "string",
+      "target_product": "string",
+      "agent_action": "string",
+      "result": "string"
+    }
+  },
+  "keyword_slots": {
+    "intent_type": "string",
+    "request_type": "string",
+    "contract_count": "string",
+    "payment_amounts": ["string"],
+    "date_values": ["string"],
+    "institutions": ["string"],
+    "channels": ["string"],
+    "documents": ["string"],
+    "actions": ["string"],
+    "outcomes": ["string"],
+    "product_names": ["string"],
+    "keywords": ["string"]
+  },
+  "keyword_labels": [
+    {
+      "keyword": "string",
+      "canonical": "string",
+      "type": "intent|channel|entity|domain|outcome|raw",
+      "source": "llm",
+      "confidence": 0.0,
+      "evidence_span": "string"
+    }
+  ],
+  "utterance_labels": [
+    {
+      "utterance_id": 1,
+      "speaker": "상담사|고객|미상",
+      "label": "고객요청|상담사확인|서류안내|처리안내|결과통보|불만제기|감정표현|일반발화",
+      "text": "string"
+    }
+  ],
+  "variants": [
+    {
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
+      "answer_style": "gold|short",
+      "stt_text": "string",
+      "answer_gold": "string",
+      "answer_standardized": "string",
+      "answer_short": "string"
+    }
+  ]
+}
+variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
+clean은 원문 의미를 유지한 정제본입니다.
+paraphrase_*는 의미 보존형 표현 변경입니다.
+layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
+filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
+summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+
+케이스ID: 70
+생성 variant 수: 5
+
+[원본 STT]
+상담사: 반갑습니다. 입니다.
+고객: 여보세요
+상담사: 네 안녕하십니까?
+고객: 저번에
+고객: 저 금요일날 저 돈을 내라고 했는데 비었더니만은
+고객: 바로 돈이 빠져나가 버리는 거라 다른 데로예
+고객: 그래 갖고
+고객: 다시 입금을 해야 될 거 같애예.
+상담사: 정보로 한번 여쭙고 안내 도와드리겠습니다. 계약자분 서혜정 고객님 본인분 맞으세요?
+고객: 네 네.
+상담사: 네 생년월일 말씀 부탁드리겠습니다.
+고객: 네 *****0269116
+상담사: 네 휴대폰 번호 0102370에 다음 네 자리 어떻게 되세요?
+고객: 네.
+고객: 근데 이유 어떻게
+상담사: 확인 감사합니다.
+상담사: 프라임 유니버셜보험 계약 건 부활하신다라는 말씀이신 거죠?
+고객: 예예.
+상담사: 네 현재 지금 6월까지 납부되어있는데 7월달 대금 8월달 대금 2달분 납부하시는 거 맞으세요?
+고객: 네 네.
+상담사: 네에
+고객: 오늘은
+고객: 1달만 좀 할게요.
+상담사: 1달분만으로 지정하실 거예요?
+고객: 다음 달에 좀 더 해줘.
+고객: 예?
+상담사: 1달분으로 하신다라는 거예요? 부하를?
+고객: 네 네.
+상담사: 이번 달에 다시 또
+상담사: 8월달 대금 납부하셔야지 실효가 안 되세요. 다음 달에 납부하게 되면 다시 실효되시는 거니까요.
+고객: 예 예.
+고객: 아 지금은 일을 이제부터 일을 며칠 안 돼 그래 있을 때거든 인제
+고객: 돈이 나오지 않아서 그러게 됐네요.
+상담사: 그럼 지금 1달분으로 해서 입금하실 거예요?
+고객: 네 네.
+상담사: 네 91570원 이고요. 저희 고객님의 국적과 실제 거주하시는 곳은 동일하게 대한민국 맞으시죠?
+고객: 네 네 다 똑같애요.
+상담사: 네.
+고객: 계좌번호 좀 다시한번
+상담사: 네 고객님 가상계좌랑 금액이랑 문자 발송해드렸구요.
+상담사: 금액 정확하게 보내주셔야지 자동으로 입금 반영되실 거예요.
+고객: 예 예.
+고객: 예예 그럴게예.
+상담사: 네 문자 발송해드렸으니까 확인해 주시고요 수간보다는 안내받으실 수 있도록 신경 써서 같이 전달해 드리겠습니다.
+고객: 네.
+고객: 예.
+고객: 예 예 감사합니다.
+상담사: 감사합니다.
+고객: 예.
+
+[기존 LLM 응답 힌트]
+계약자 서혜정 고객님께서 프라임 유니버셜보험 계약 건을 부활시키기 위해 6월까지 납부된 상태에서 7월달 대금 9****원을 1달분으로 입금하시기로 하셨으며, 계좌번호와 국적, 거주지는 모두 대한민국으로 일치함.
+
+[정답지]
+실효된 계약 1달 보험료로 부활시 당월에 1달 보험료 또 입금하셔야 실효 안됨 안내
+국적과 실제거주국 한국 확인
+가상계좌와 보험료 문자발송해드림
+정확한 금액 입금하셔야 자동입금반영됨안내
+
+[키워드 힌트]
+실효된 계약 부활
+1달 보험료
+당월 입금
+실효 안됨
+국적 한국
+실제거주국 한국
+가상계좌
+보험료 문자발송
+정확한 금액 입금
+자동입금 반영
+
+요구사항:
+1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
+2. variants는 정확히 5개 생성합니다.
+3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
+4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
+5. JSON 외 텍스트는 절대 포함하지 마세요.
+

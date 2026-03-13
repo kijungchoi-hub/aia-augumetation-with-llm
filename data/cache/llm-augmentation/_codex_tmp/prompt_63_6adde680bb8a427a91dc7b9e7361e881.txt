@@ -1,0 +1,161 @@
+﻿당신은 한국어 STT 상담 데이터셋 생성기입니다.
+반드시 JSON만 출력합니다.
+사실 보존이 최우선입니다.
+금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
+마스킹 값은 **** 형태를 유지합니다.
+출력 스키마:
+{
+  "intent_type": "string",
+  "answer_gold": "string",
+  "answer_standardized": "string",
+  "answer_short": "string",
+  "summary_structured": {
+    "customer_intent": "string",
+    "agent_action": "string",
+    "result": "string",
+    "short_text": "string",
+    "standard_text": "string",
+    "slot_summary": {
+      "request_type": "string",
+      "target_product": "string",
+      "agent_action": "string",
+      "result": "string"
+    }
+  },
+  "keyword_slots": {
+    "intent_type": "string",
+    "request_type": "string",
+    "contract_count": "string",
+    "payment_amounts": ["string"],
+    "date_values": ["string"],
+    "institutions": ["string"],
+    "channels": ["string"],
+    "documents": ["string"],
+    "actions": ["string"],
+    "outcomes": ["string"],
+    "product_names": ["string"],
+    "keywords": ["string"]
+  },
+  "keyword_labels": [
+    {
+      "keyword": "string",
+      "canonical": "string",
+      "type": "intent|channel|entity|domain|outcome|raw",
+      "source": "llm",
+      "confidence": 0.0,
+      "evidence_span": "string"
+    }
+  ],
+  "utterance_labels": [
+    {
+      "utterance_id": 1,
+      "speaker": "상담사|고객|미상",
+      "label": "고객요청|상담사확인|서류안내|처리안내|결과통보|불만제기|감정표현|일반발화",
+      "text": "string"
+    }
+  ],
+  "variants": [
+    {
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
+      "answer_style": "gold|short",
+      "stt_text": "string",
+      "answer_gold": "string",
+      "answer_standardized": "string",
+      "answer_short": "string"
+    }
+  ]
+}
+variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
+clean은 원문 의미를 유지한 정제본입니다.
+paraphrase_*는 의미 보존형 표현 변경입니다.
+layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
+filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
+summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+
+케이스ID: 63
+생성 variant 수: 5
+
+[원본 STT]
+상담사: 반갑습니다 박근화입니다.
+고객: 네 1가지 여쭤보겠는데요.
+상담사: 네
+고객: 여보세요 예 서류를 띠러 가야 되는데
+상담사: 네.
+고객: 거기 위치가 어디예요?
+고객: 거기 또 서울 노원구 쪽인데
+상담사: 어떤 서류를 말씀하세요?
+고객: 저기 저기 저기 보험 든 거 옛날 보험 거 보험 든거 황 저기
+고객: 저기 뭐지.
+고객: 황
+고객: 서류가
+고객: 저기
+상담사: 고객님
+상담사: 일단 고객님 정보가 조회가 되지가 않아서요 저희가 주민등록번호 좀 어 제가 ARS 연결해 드릴 테니까 1번
+고객: 네 네.
+고객: 네
+고객: 네네네
+고객: 예
+고객: 네네네.
+상담사: 네 눌러주세요.
+상담사: 어 고객님 고객
+고객: 여보세요?
+고객: 네네. 네.
+고객: 예
+상담사: 즉 고객님께서 계약자가 맞으세요?
+고객: 옛날에 그게 보니까
+상담사: 네.
+고객: 저기
+고객: 울 딸이 안 써 딸거 했거든요?
+상담사: 계약자가 누구세요?
+고객: 안소연이요.
+상담사: 아 그니까 계약자님이 본인 맞으세요?
+고객: 제가 저기 부모거든요.
+상담사: 고객님
+상담사: 고객님 본인이 계약자시냐고 말씀드린 거예요.
+고객: 예.
+고객: 네 네 네 네 맞아 네 네 네.
+상담사: 어
+상담사: 조회가 아예 되지가 않는데 혹시 AI A가 맞을까요?
+상담사: 고객님이 주민등록번호를 방금 저희 쪽으로 보내주셨을
+고객: 네 네 네
+상담사: 보내 주셨을 텐데 아예 정보가 조회가 되지가 않거든요.
+고객: 아 네 근데 AIG인데
+상담사: 아 에이아이 지는 다시 제가 메모 가능하세요 1544 279이에요.
+고객: 예
+고객: 아 아 저 잠깐만요. 아 그래요?
+상담사: 네.
+고객: 아이 수고하셨다.
+상담사: 네
+고객: 잠깐만 잠깐만요.
+상담사: 네
+상담사: 1544
+고객: 잠깐만요.
+고객: 1544에
+상담사: 2792
+고객: 있지.
+상담사: 9 2 네.
+고객: 구 주류요?
+고객: 네 감사합니다 네.
+상담사: 네
+
+[기존 LLM 응답 힌트]
+고객은 계약자 본인으로, 보험 서류 수령을 위해 서울 노원구 소재 지점을 방문해야 하는 상황이며, 서류는 과거에 가입한 보험 관련 서류로 확인됨. 고객은 주민등록번호를 ARS를 통해 전달했으나, 시스템 조회가 되지 않음. 보험사로는 AIG(1544-****)로 확인됨.
+
+[정답지]
+서류를 떼러가야하는데 위치가 어디인지 문의하였으며 당사에는 주민등록번호로 조회되는 계약건이 없음. AIG 라고 하여 AIG손해보험사 번호 안내함
+
+[키워드 힌트]
+서류발급, 위치문의
+주민등록번호조회
+계약건없음
+AIG손해보험사
+번호안내
+
+요구사항:
+1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
+2. variants는 정확히 5개 생성합니다.
+3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
+4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
+5. JSON 외 텍스트는 절대 포함하지 마세요.
+
