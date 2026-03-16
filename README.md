@@ -1,279 +1,179 @@
-# AIA STT Augmentation Pipeline
+﻿# AIA STT Augmentation Pipeline
 
-`data/origin/stt_summary.csv`를 기준 입력으로 사용해 STT 정제, auto labeling, 요약/표현 증강, 학습용 split 생성, 버전별 데이터셋 확장을 수행한다.
+`data/origin/stt_summary.csv`를 입력으로 사용해 STT 정제, intent/slot 생성, answer 생성 및 증강, 학습용 split 생성, 버전별 데이터셋 생성, 검수페이지 자산 생성을 수행하는 PowerShell 기반 파이프라인입니다.
 
-## 프로젝트 구조
+## 프로젝트 구성
 
 - `scripts/Invoke-SttAugmentation.ps1`
-  - 원본 CSV를 읽어 정제본, 정규화본, 증강본, 검증 통과본을 생성한다.
+  - 원본 CSV를 읽어 `base_clean.csv`, `base_normalized.csv`, `augmented_dataset.csv`, `augmented_validated.csv`를 생성합니다.
+  - `stt_text`뿐 아니라 `answer_gold`, `answer_standardized`, `answer_short`도 함께 생성합니다.
+  - 기본 증강 타입은 `clean`, `paraphrase_service`, `paraphrase_customer`, `answer_polite`, `answer_compact`입니다.
 - `scripts/Split-SttDataset.ps1`
-  - 정규화/검증 결과를 읽어 `train/valid/test` split을 생성한다.
+  - 처리 결과를 읽어 `train/valid/test` split을 생성합니다.
 - `scripts/New-DatasetVersions.ps1`
-  - `data/splits`를 기준으로 `ver1.0`, `ver1.1`, `ver1.2`를 생성한다.
-- `docs/stt_summary_augmentation_flow.md`
-  - 전체 증강 및 auto labeling 흐름 설명
-- `docs/keyword_slot_rules.md`
-  - keyword/slot 추출 및 검증 규칙 설명
-- `docs/stt_summary_augmentation_with_auto_labeling.md`
-  - 설계 기준 문서
-- `scripts/dev/Run-AugmentationDebug.ps1`
-  - augmentation 스크립트 단독 실행과 오류 확인용 디버그 진입점
+  - `data/splits` 또는 기존 `ver1.0` 기준본을 기준으로 `ver1.0`부터 `ver1.5`까지 생성합니다.
+- `scripts/Export-QualityReviewData.ps1`
+  - 버전별 CSV를 검수페이지에서 사용하는 정적 JS 자산으로 변환합니다.
+- `start-review.ps1`
+  - Python `http.server`로 검수페이지를 로컬에서 실행합니다.
+- `web/quality-review.html`
+  - 버전별 데이터셋을 브라우저에서 검수하는 정적 페이지입니다.
 
-## 디렉터리 정리 원칙
+## 입력과 출력 경로
 
-- 루트에는 실행 진입점과 핵심 문서만 둔다.
-- 현재 파이프라인이 직접 사용하는 데이터는 `data/origin`, `data/processed`, `data/splits`, `data/versions`에 둔다.
-- 과거 시트 기준 복사본이나 보관용 산출물은 `data/archive` 아래에 둔다.
-
-## 기준 입력 파일
-
-- canonical 원본: `data/origin/stt_summary.csv`
-- 과거 원본명이나 임시 복사본은 유지하지 않는다.
+- 원본 입력: `data/origin/stt_summary.csv`
+- 처리 결과: `data/processed`
+- split 결과: `data/splits`
+- 버전별 데이터셋: `data/versions`
+- 검수페이지 자산: `web/review-data`
+- 백업: `data/archive`
 
 ## 처리 흐름
 
 1. STT 전문 정제
-2. 화자 단위 utterance 복원 및 utterance labeling
-3. intent 추론과 keyword slot 추출
-4. canonical keyword labeling 생성
-5. 구조화 summary 생성
-6. validator 기반 confidence 산출
-7. Gold/Silver/Weak 등급화
-8. 의미 보존형 STT/summary 증강
-9. split 생성
-10. 버전별 데이터셋 확장
-11. 버전별 산출물 검증
+2. intent / keyword slot / utterance label 생성
+3. gold / standardized / short answer 생성
+4. validator 기반 유효성 검사
+5. STT 및 answer 증강 데이터 생성
+6. 학습용 split 생성
+7. 버전별 데이터셋 생성
+8. 검수페이지 자산 생성
 
-## 산출물
+## 주요 컬럼
 
-### 전처리/증강
-
-- `data/processed/base_clean.csv`
-- `data/processed/base_normalized.csv`
-- `data/processed/augmented_dataset.csv`
-- `data/processed/augmented_validated.csv`
-
-### split
-
-- `data/splits/base_train.csv`
-- `data/splits/base_valid.csv`
-- `data/splits/base_test.csv`
-- `data/splits/train_augmented.csv`
-- `data/splits/train_final.csv`
-
-### 버전 데이터셋
-
-- `data/versions/ver1.0`
-- `data/versions/ver1.1`
-- `data/versions/ver1.2`
-
-### 보관 데이터
-
-- `data/archive/sheet_versions`
-  - 시트 기준 원본/전처리/split 스냅샷 보관본
-
-## 추가 컬럼 설명
-
-### processed/augmented 계열 주요 컬럼
-
-- `answer_style`
-  - 요약 표현 유형. 예: `gold`, `short`
-- `label_grade`
-  - 라벨 신뢰 등급. 예: `Gold`, `Silver`, `Weak`
-- `label_confidence`
-  - 규칙/검증 기반 confidence score
+- `stt_text`
+- `answer_gold`
+- `answer_standardized`
 - `answer_short`
-  - 구조화 summary에서 생성한 짧은 요약
-- `summary_structured`
-  - `customer_intent`, `agent_action`, `result`, `slot_summary`를 담은 JSON 문자열
+- `intent_type`
+- `label_grade`
+- `label_confidence`
 - `keyword_slots`
-  - intent, 금액, 날짜, 기관, 채널, 문서, 결과 등을 구조화한 JSON 문자열
 - `keyword_labels`
-  - canonical keyword labeling 결과 JSON 문자열
 - `utterance_labels`
-  - 화자 단위 발화 라벨링 결과 JSON 문자열
 - `auto_label_json`
-  - summary/keyword/quality tag를 묶은 최종 auto labeling JSON 문자열
 - `validation_pass`
-  - validator 통과 여부
 - `validation_reason`
-  - 검증 결과 사유. 예: `ok`, `amount_mismatch`, `too_short`
 
-### split 계열에서 유지되는 보조 컬럼
+## 증강 타입
 
-- `answer_style`
-- `label_grade`
-- `label_confidence`
-- `answer_short`
-- `keyword_slots`
-- `keyword_labels`
-- `utterance_labels`
-- `auto_label_json`
+- `clean`
+- `paraphrase_service`
+- `paraphrase_customer`
+- `answer_polite`
+- `answer_compact`
 
-## 컬럼 예시
+`answer_polite`, `answer_compact`는 STT는 유지하고 answer 계열만 변형하는 answer-only 증강입니다.
 
-### `summary_structured`
-
-```json
-{
-  "customer_intent": "가상계좌 발송 또는 입금 가능 여부를 요청함",
-  "agent_action": "가상계좌 발송 가능 여부와 금액을 안내함",
-  "result": "문자 발송 기준으로 정리됨",
-  "slot_summary": {
-    "request_type": "가상계좌",
-    "agent_action": "발송, 안내",
-    "result": "가상계좌 발송"
-  }
-}
-```
-
-### `keyword_labels`
-
-```json
-[
-  {
-    "keyword": "가상계좌문자요청",
-    "canonical": "가상계좌",
-    "type": "intent",
-    "source": "keyword+rule",
-    "confidence": 0.88,
-    "evidence_span": "가상계좌문자요청"
-  }
-]
-```
-
-### `utterance_labels`
-
-```json
-[
-  {
-    "utterance_id": 5,
-    "speaker": "고객",
-    "label": "고객요청",
-    "text": "가상계좌 좀 보내주세요."
-  },
-  {
-    "utterance_id": 17,
-    "speaker": "상담사",
-    "label": "처리안내",
-    "text": "문자로 발송해 드리겠습니다."
-  }
-]
-```
-
-### `auto_label_json`
-
-```json
-{
-  "call_id": "2",
-  "auto_labels": {
-    "summary_label": {
-      "text": "가상계좌 발송 요청에 대해 발송 가능 여부와 금액을 안내하고 문자 발송으로 정리함",
-      "short_text": "가상계좌 발송 요청, 문자 발송으로 정리됨",
-      "method": "rule_structured_v2",
-      "confidence": 0.98
-    },
-    "issue_type": {
-      "label": "가상계좌",
-      "confidence": 0.99
-    },
-    "quality_tags": {
-      "missing_slots": [],
-      "hallucination_risk": false,
-      "validation_pass": true,
-      "validation_reasons": []
-    }
-  }
-}
-```
-
-## split 규칙
-
-- `case_id % 10 == 0`: `test`
-- `case_id % 10 == 1`: `valid`
-- 나머지: `train`
-
-증강 데이터는 `train` 케이스에만 합쳐 `train_final.csv`에 포함한다.
-
-## 버전 규칙
-
-- `ver1.0`: 현재 기준 데이터셋
-- `ver1.1`: `train` 증강 배수를 2배로 확장한 데이터셋
-- `ver1.2`: `train` 증강 배수를 4배로 확장한 데이터셋
-
-## 데이터 품질검수 웹페이지
-
-- 변환 스크립트: `scripts/Export-QualityReviewData.ps1`
-- 검수 페이지: `web/quality-review.html`
-- 생성 데이터 자산: `web/review-data`
-
-### 사용 방법
-
-1. `powershell -ExecutionPolicy Bypass -File .\scripts\Export-QualityReviewData.ps1`
-2. 브라우저에서 `web/quality-review.html`을 연다.
-3. 버전과 CSV 파일을 선택한 뒤 각 행에 대해 `Y` 또는 `N`으로 판정한다.
-4. 필요하면 `현재 파일 결과 CSV` 또는 `전체 결과 CSV`로 내보낸다.
-
-### 검수 결과 저장 방식
-
-- 브라우저 `localStorage`에 임시 저장된다.
-- 내보내기 CSV에는 `dataset_key`, `row_key`, `review_result`, `review_note`, `updated_at` 등이 포함된다.
-- `ver1.1`: `train_augmented`, `train_final` 2배
-- `ver1.2`: `train_augmented`, `train_final` 4배
-
-현재 기준 건수:
-
-- `base_train=136`
-- `base_valid=16`
-- `base_test=17`
-- `train_augmented=645`
-- `train_final=781`
-
-버전별 건수:
-
-- `ver1.0`: `train_augmented=645`, `train_final=781`
-- `ver1.1`: `train_augmented=1290`, `train_final=1562`
-- `ver1.2`: `train_augmented=2580`, `train_final=3124`
-
-## 검증 규칙
-
-- 금액 유지
-- 날짜 유지
-- 계약 건수 유지
-- 마스킹 토큰 `****` 유지
-- 지나치게 짧은 문장 제외
-- validator 통과 + confidence 기준 충족 시 `Silver`
-
-## 권장 실행 순서
+## 실행 순서
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-SttAugmentation.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\Split-SttDataset.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\New-DatasetVersions.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\Export-QualityReviewData.ps1
 ```
 
-## 검증 명령
+## 주요 파라미터
 
-생성 건수 확인:
+### `scripts/Invoke-SttAugmentation.ps1`
+
+- `-InputCsv`
+- `-OutputDir`
+- `-CacheDir`
+- `-Model`
+- `-CodexCommand`
+- `-AugmentationsPerCase`
+- `-MaxRows`
+- `-RequestDelayMs`
+- `-MaxRetries`
+- `-CodexTimeoutSec`
+- `-DisableCache`
+
+기본 모델은 `gpt-5.4`이며 기본 증강 개수는 `5`입니다.
+
+## 현재 데이터 건수
+
+### processed 기준
+
+- `base_clean=169`
+- `base_normalized=169`
+- `augmented_dataset=845`
+- `augmented_validated=196`
+
+### splits 기준
+
+- `base_train=136`
+- `base_valid=16`
+- `base_test=17`
+- `train_augmented=229`
+- `train_final=365`
+
+### versions 기준
+
+- `ver1.0`: `train_augmented=229`, `train_final=365`
+- `ver1.1`: `train_augmented=458`, `train_final=730`
+- `ver1.2`: `train_augmented=916`, `train_final=1460`
+- `ver1.3`: `train_augmented=1832`, `train_final=2920`
+- `ver1.4`: `train_augmented=3664`, `train_final=5840`
+- `ver1.5`: `train_augmented=7328`, `train_final=11680`
+
+## 버전 규칙
+
+- `ver1.0`: 증강 데이터 1배
+- `ver1.1`: 증강 데이터 2배
+- `ver1.2`: 증강 데이터 4배
+- `ver1.3`: 증강 데이터 8배
+- `ver1.4`: 증강 데이터 16배
+- `ver1.5`: 증강 데이터 32배
+
+## 검수페이지
+
+- 페이지: `web/quality-review.html`
+- 스타일: `web/quality-review.css`
+- 스크립트: `web/quality-review.js`
+- 생성 자산: `web/review-data`
+- 생성 스크립트: `scripts/Export-QualityReviewData.ps1`
+
+### 사용 방법
+
+1. 검수 자산 생성
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Export-QualityReviewData.ps1
+```
+
+2. 로컬 서버 실행
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-review.ps1
+```
+
+3. 브라우저에서 `http://localhost:8000/web/quality-review.html` 열기
+
+## 최근 백업
+
+- `data/archive/augmentation_snapshots/20260313_171122`
+  - answer 증강 반영 전후 산출물 백업
+- `data/archive/augmentation_snapshots/20260316_094818`
+  - 구버전 `data/versions` 및 `web/review-data` 재생성 전 백업
+
+## 빠른 검증 명령
 
 ```powershell
 Import-Csv .\data\processed\base_normalized.csv | Measure-Object
 Import-Csv .\data\processed\augmented_validated.csv | Measure-Object
 Import-Csv .\data\splits\train_final.csv | Measure-Object
-Import-Csv .\data\versions\ver1.2\train_final.csv | Measure-Object
+Import-Csv .\data\versions\ver1.5\train_final.csv | Measure-Object
 ```
-
-마스킹 표기 확인:
 
 ```powershell
 rg -n "\[MASK\]" .\data .\docs .\scripts
 rg -n "\*\*\*\*" .\data\splits .\data\versions
 ```
 
-샘플 행 확인:
+## 참고 문서
 
-```powershell
-Import-Csv .\data\processed\base_normalized.csv | Select-Object -First 1 case_id,intent_type,label_grade,label_confidence,answer_short
-Import-Csv .\data\splits\train_augmented.csv | Select-Object -First 1 sample_id,aug_type,stt_text,answer_gold
-Import-Csv .\data\versions\ver1.1\manifest.csv
-```
+- `docs/stt_summary_augmentation_flow.md`
+- `docs/keyword_slot_rules.md`
+- `docs/stt_summary_augmentation_with_auto_labeling.md`

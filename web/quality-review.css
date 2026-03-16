@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #f4efe6;
   --panel: rgba(255, 250, 242, 0.9);
   --panel-strong: #fffaf2;
@@ -273,10 +273,50 @@ button:hover {
   line-height: 1.55;
 }
 
+.text-diff-legend {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.text-diff-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.text-diff-chip.added {
+  background: rgba(241, 196, 15, 0.28);
+  color: #6a4a00;
+}
+
+.text-diff-chip.added-segment {
+  background: rgba(241, 196, 15, 0.28);
+  color: #6a4a00;
+}
+
 .text-diff-view {
+  display: grid;
+  gap: 8px;
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.6;
+}
+
+.text-diff-line {
+  margin: 0;
+}
+
+.text-diff-line.added-segment {
+  padding: 10px 12px;
+  border: 1px solid rgba(241, 196, 15, 0.34);
+  border-radius: 12px;
+  background: rgba(241, 196, 15, 0.18);
+  color: #6a4a00;
 }
 
 .field-card.stt-card {
@@ -555,6 +595,8 @@ button:hover {
     align-items: stretch;
   }
 }
+
+
 
 
 

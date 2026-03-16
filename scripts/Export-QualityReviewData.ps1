@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$SourceRoot = "data/versions",
     [string]$OutputRoot = "web/review-data",
@@ -7,6 +7,24 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+function Get-PropertyValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        $InputObject,
+        [Parameter(Mandatory = $true)]
+        [string[]]$CandidateNames
+    )
+
+    foreach ($candidateName in $CandidateNames) {
+        $property = $InputObject.PSObject.Properties[$candidateName]
+        if ($null -ne $property) {
+            return [string]$property.Value
+        }
+    }
+
+    return ""
+}
 
 function New-SafeAssetName {
     param(
@@ -41,9 +59,9 @@ $originSttByCaseId = @{}
 if (Test-Path -LiteralPath $OriginCsv) {
     $originRows = @(Import-Csv -LiteralPath $OriginCsv)
     foreach ($originRow in $originRows) {
-        $caseId = [string]$originRow.'케이스ID'
+        $caseId = Get-PropertyValue -InputObject $originRow -CandidateNames @("케이스ID", "case_id", "source_case_id", "sample_id")
         if (-not [string]::IsNullOrWhiteSpace($caseId)) {
-            $originSttByCaseId[$caseId] = [string]$originRow.'STT전문'
+            $originSttByCaseId[$caseId] = Get-PropertyValue -InputObject $originRow -CandidateNames @("STT전문", "stt_text", "text", "utterance")
         }
     }
 }
@@ -81,15 +99,15 @@ foreach ($versionDir in $versionDirs) {
                         $valueMap[$property.Name] = $property.Value
                     }
 
-                    $sourceCaseId = [string]$valueMap['source_case_id']
+                    $sourceCaseId = [string]$valueMap["source_case_id"]
                     if ([string]::IsNullOrWhiteSpace($sourceCaseId)) {
-                        $sourceCaseId = [string]$valueMap['sample_id']
+                        $sourceCaseId = [string]$valueMap["sample_id"]
                     }
 
                     [ordered]@{
                         rowIndex = $index + 1
                         values = $valueMap
-                        originSttText = if ($originSttByCaseId.ContainsKey($sourceCaseId)) { $originSttByCaseId[$sourceCaseId] } else { '' }
+                        originSttText = if ($originSttByCaseId.ContainsKey($sourceCaseId)) { $originSttByCaseId[$sourceCaseId] } else { "" }
                     }
                 }
             )
@@ -97,7 +115,7 @@ foreach ($versionDir in $versionDirs) {
 
         $scriptBody = @(
             "window.QUALITY_REVIEW_DATA = window.QUALITY_REVIEW_DATA || {};"
-            (ConvertTo-JavaScriptAssignment -Expression "window.QUALITY_REVIEW_DATA[""$datasetKey""]" -Value $payload)
+            (ConvertTo-JavaScriptAssignment -Expression "window.QUALITY_REVIEW_DATA[`"$datasetKey`"]" -Value $payload)
         ) -join [Environment]::NewLine
 
         Set-Content -LiteralPath $assetPath -Value $scriptBody -Encoding UTF8

@@ -1,2 +1,3 @@
-﻿"version","multiplier","base_train_rows","base_valid_rows","base_test_rows","train_augmented_rows","train_final_rows"
-"ver1.0","1","136","16","17","149","285"
+version https://git-lfs.github.com/spec/v1
+oid sha256:9ac560f6afb8c36bbe78ec57c3ef957aaed7b9724db5fe9972f46dff62a4c753
+size 162

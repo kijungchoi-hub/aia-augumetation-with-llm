@@ -1,21 +1,22 @@
-케이스ID: __CASE_ID__
-생성 variant 수: __VARIANT_COUNT__
+﻿Case ID: __CASE_ID__
+Requested variant count: __VARIANT_COUNT__
 
-[원본 STT]
+[Source STT]
 __STT_TEXT__
 
-[기존 LLM 응답 힌트]
+[Existing LLM Answer Hint]
 __LLM_ANSWER__
 
-[정답지]
+[Gold Answer]
 __ANSWER_GOLD__
 
-[키워드 힌트]
+[Keyword Hint]
 __KEYWORD_HINT__
 
-요구사항:
-1. 원문과 정답지를 기준으로 base 요약과 라벨을 생성합니다.
-2. variants는 정확히 __VARIANT_COUNT__개 생성합니다.
-3. answer_gold, answer_standardized, answer_short는 variant별로 함께 맞춰 작성합니다.
-4. 키워드와 요약은 학습 데이터용으로 간결하고 일관되게 작성합니다.
-5. JSON 외 텍스트는 절대 포함하지 마세요.
+Requirements:
+1. Build the base labels and structured summary from the source STT and gold answer.
+2. Generate exactly __VARIANT_COUNT__ variants.
+3. Keep answer_gold, answer_standardized, and answer_short aligned for each variant.
+4. For answer_polite and answer_compact, keep STT text unchanged and modify only the answer fields.
+5. Keep wording concise and suitable for training data.
+6. Return valid JSON only.

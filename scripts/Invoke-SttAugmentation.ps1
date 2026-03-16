@@ -301,7 +301,7 @@ function Sanitize-Summary($Summary, [string]$AnswerStandardized, [string]$Answer
 }
 
 function Sanitize-Variants($Variants, [int]$Count, [string]$BaseStt, [string]$BaseGold, [string]$BaseStandardized, [string]$BaseShort) {
-    $targetTypes = @("clean", "paraphrase_service", "paraphrase_customer", "layout_spacing", "filler_light", "summary_short")
+    $targetTypes = @("clean", "paraphrase_service", "paraphrase_customer", "answer_polite", "answer_compact", "summary_short")
     $sanitized = New-Object System.Collections.Generic.List[object]
     $index = 0
     foreach ($variant in @($Variants)) {
@@ -310,12 +310,12 @@ function Sanitize-Variants($Variants, [int]$Count, [string]$BaseStt, [string]$Ba
         if (-not $augType) { $augType = $targetTypes[$index] }
         $answerStyle = NWS ([string]$variant.answer_style)
         if (-not $answerStyle) {
-            $answerStyle = if ($augType -eq "summary_short") { "short" } else { "gold" }
+            $answerStyle = if ($augType -eq "summary_short") { "short" } elseif ($augType -eq "answer_polite") { "polite" } elseif ($augType -eq "answer_compact") { "compact" } else { "gold" }
         }
         $answerGold = if (NWS ([string]$variant.answer_gold)) { Normalize-Answer ([string]$variant.answer_gold) } elseif ($answerStyle -eq "short") { $BaseShort } else { $BaseGold }
         $answerStandardized = if (NWS ([string]$variant.answer_standardized)) { Normalize-Answer ([string]$variant.answer_standardized) } elseif ($answerStyle -eq "short") { $BaseShort } else { $BaseStandardized }
         $answerShort = if (NWS ([string]$variant.answer_short)) { Normalize-Answer ([string]$variant.answer_short) } else { $BaseShort }
-        $sttText = if (NWS ([string]$variant.stt_text)) { Normalize-Stt ([string]$variant.stt_text) } else { $BaseStt }
+        $sttText = if ($augType -like "answer_*") { $BaseStt } elseif (NWS ([string]$variant.stt_text)) { Normalize-Stt ([string]$variant.stt_text) } else { $BaseStt }
         $sanitized.Add([pscustomobject]@{
             aug_type = $augType
             answer_style = $answerStyle
@@ -331,10 +331,10 @@ function Sanitize-Variants($Variants, [int]$Count, [string]$BaseStt, [string]$Ba
         $fallbackType = $targetTypes[$sanitized.Count]
         $sanitized.Add([pscustomobject]@{
             aug_type = $fallbackType
-            answer_style = if ($fallbackType -eq "summary_short") { "short" } else { "gold" }
+            answer_style = if ($fallbackType -eq "summary_short") { "short" } elseif ($fallbackType -eq "answer_polite") { "polite" } elseif ($fallbackType -eq "answer_compact") { "compact" } else { "gold" }
             stt_text = $BaseStt
-            answer_gold = if ($fallbackType -eq "summary_short") { $BaseShort } else { $BaseGold }
-            answer_standardized = if ($fallbackType -eq "summary_short") { $BaseShort } else { $BaseStandardized }
+            answer_gold = if ($fallbackType -eq "summary_short") { $BaseShort } elseif ($fallbackType -like "answer_*") { $BaseGold } else { $BaseGold }
+            answer_standardized = if ($fallbackType -eq "summary_short") { $BaseShort } elseif ($fallbackType -like "answer_*") { $BaseStandardized } else { $BaseStandardized }
             answer_short = $BaseShort
         })
     }
@@ -357,7 +357,6 @@ function Get-LlmAugmentation($Row, [int]$VariantCount) {
             Remove-Item -LiteralPath $cachePath -Force -ErrorAction SilentlyContinue
         }
     }
-
     $systemPrompt = Get-Content -LiteralPath (Resolve-RepoPath $SystemPromptPath) -Raw -Encoding UTF8
     $userTemplate = Get-Content -LiteralPath (Resolve-RepoPath $UserPromptTemplatePath) -Raw -Encoding UTF8
     $userPrompt = $userTemplate.Replace("__CASE_ID__", [string]$Row.케이스ID).
@@ -501,6 +500,10 @@ Write-Output ("Generated base_clean.csv rows={0}" -f $baseClean.Count)
 Write-Output ("Generated base_normalized.csv rows={0}" -f $baseNormalized.Count)
 Write-Output ("Generated augmented_dataset.csv rows={0}" -f $augmented.Count)
 Write-Output ("Generated augmented_validated.csv rows={0}" -f $validated.Count)
+
+
+
+
 
 
 

@@ -1,2 +1,3 @@
-window.QUALITY_REVIEW_DATA = window.QUALITY_REVIEW_DATA || {};
-window.QUALITY_REVIEW_DATA["ver1.1/manifest"] = {"key":"ver1.1/manifest","version":"ver1.1","fileName":"manifest.csv","fileBaseName":"manifest","rowCount":1,"columns":["version","multiplier","base_train_rows","base_valid_rows","base_test_rows","train_augmented_rows","train_final_rows"],"rows":[{"rowIndex":1,"values":{"version":"ver1.1","multiplier":"2","base_train_rows":"136","base_valid_rows":"16","base_test_rows":"17","train_augmented_rows":"1252","train_final_rows":"1524"},"originSttText":""}]};
+version https://git-lfs.github.com/spec/v1
+oid sha256:793107cd12981edd8baf96b68e36eb79df66e9a1c23910b05802026183997018
+size 568

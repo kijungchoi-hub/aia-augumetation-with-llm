@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$SplitsDir = '.\data\splits',
     [string]$OutputRoot = '.\data\versions'
@@ -10,12 +10,6 @@ $ErrorActionPreference = 'Stop'
 
 function New-VersionDir([string]$Path) {
     New-Item -ItemType Directory -Path $Path -Force | Out-Null
-}
-
-function Copy-BaseFiles([string]$SourceDir, [string]$TargetDir) {
-    foreach ($name in @('base_train.csv','base_valid.csv','base_test.csv')) {
-        Copy-Item -Path (Join-Path $SourceDir $name) -Destination (Join-Path $TargetDir $name) -Force
-    }
 }
 
 function Expand-TrainingRows {
@@ -69,6 +63,9 @@ $versions = @(
     @{ Name = 'ver1.0'; Copies = 1 }
     @{ Name = 'ver1.1'; Copies = 2 }
     @{ Name = 'ver1.2'; Copies = 4 }
+    @{ Name = 'ver1.3'; Copies = 8 }
+    @{ Name = 'ver1.4'; Copies = 16 }
+    @{ Name = 'ver1.5'; Copies = 32 }
 )
 
 foreach ($version in $versions) {

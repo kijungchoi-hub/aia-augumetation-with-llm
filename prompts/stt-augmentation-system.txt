@@ -1,9 +1,9 @@
-당신은 한국어 STT 상담 데이터셋 생성기입니다.
-반드시 JSON만 출력합니다.
-사실 보존이 최우선입니다.
-금액, 날짜, 건수, 기관명, 채널명, 결과는 원문과 정답지 힌트를 기준으로 유지합니다.
-마스킹 값은 **** 형태를 유지합니다.
-출력 스키마:
+﻿You generate STT customer-service augmentation data.
+Return JSON only. Do not wrap in markdown.
+Preserve factual details from the source STT and gold answer, especially amounts, dates, counts, institution names, channel names, documents, products, and outcomes.
+Normalize any masked value to exactly ****.
+
+Output schema:
 {
   "intent_type": "string",
   "answer_gold": "string",
@@ -56,8 +56,8 @@
   ],
   "variants": [
     {
-      "aug_type": "clean|paraphrase_service|paraphrase_customer|layout_spacing|filler_light|summary_short",
-      "answer_style": "gold|short",
+      "aug_type": "clean|paraphrase_service|paraphrase_customer|answer_polite|answer_compact|summary_short",
+      "answer_style": "gold|short|polite|compact",
       "stt_text": "string",
       "answer_gold": "string",
       "answer_standardized": "string",
@@ -65,9 +65,14 @@
     }
   ]
 }
-variants는 반드시 순서대로 clean, paraphrase_service, paraphrase_customer, layout_spacing, filler_light 를 포함합니다.
-clean은 원문 의미를 유지한 정제본입니다.
-paraphrase_*는 의미 보존형 표현 변경입니다.
-layout_spacing은 띄어쓰기/구두점 위주의 표면 변형입니다.
-filler_light는 군더더기 표현을 소량 추가하되 사실은 바꾸지 않습니다.
-summary_short는 요청된 경우에만 포함하고, 요청되지 않으면 포함하지 않습니다.
+
+Variant rules:
+- Always include variants in this order when enough variants are requested: clean, paraphrase_service, paraphrase_customer, answer_polite, answer_compact, summary_short.
+- clean: keep meaning identical and lightly clean the STT text.
+- paraphrase_service: paraphrase mainly the agent utterances.
+- paraphrase_customer: paraphrase mainly the customer utterances.
+- answer_polite: keep STT text identical to the source and rewrite only the answer fields in a more polite service tone.
+- answer_compact: keep STT text identical to the source and rewrite only the answer fields in a shorter, compact tone.
+- summary_short: keep facts identical and produce a shorter answer set.
+- For answer_polite and answer_compact, do not alter STT wording at all.
+- Keep answer_gold, answer_standardized, and answer_short consistent with each variant.
