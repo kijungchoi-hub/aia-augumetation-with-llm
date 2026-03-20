@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$BaseNormalizedCsv = ".\data\processed\base_normalized.csv",
     [string]$AugmentedValidatedCsv = ".\data\processed\augmented_validated.csv",
@@ -20,7 +20,7 @@ function Get-SplitName([string]$CaseId) {
 
 function Sanitize-Field($Value) {
     if ($null -eq $Value) { return $null }
-    return ([string]$Value).Replace('[MASK]', '****')
+    return [string]$Value
 }
 
 if (-not (Test-Path $BaseNormalizedCsv)) { throw "Base normalized CSV not found: $BaseNormalizedCsv" }
@@ -91,5 +91,6 @@ Write-Output ("Generated base_valid.csv rows={0}" -f $baseValid.Count)
 Write-Output ("Generated base_test.csv rows={0}" -f $baseTest.Count)
 Write-Output ("Generated train_augmented.csv rows={0}" -f $trainAugmented.Count)
 Write-Output ("Generated train_final.csv rows={0}" -f $trainFinal.Count)
+
 
 

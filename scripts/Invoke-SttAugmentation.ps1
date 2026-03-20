@@ -28,13 +28,12 @@ function NWS([string]$Text) {
 
 function Normalize-Stt([string]$Text) {
     $t = NWS $Text
-    $t = $t -replace "\*{2,}", "****"
     $t = $t -replace "상담사\s*:", "상담사: " -replace "고객\s*:", "고객: " -replace ":\s{2,}", ": "
     return $t
 }
 
 function Normalize-Answer([string]$Text) {
-    $t = (NWS $Text) -replace "\*{2,}", "****"
+    $t = NWS $Text
     return ($t -replace "\s+\.", "." -replace "\s+,", ",")
 }
 
@@ -147,7 +146,6 @@ function Validate([string]$OriginalText, [string]$CandidateText, $Slots) {
             $reasons.Add("date_mismatch")
         }
     }
-    if ($CandidateText -match "\[MASK\]") { $reasons.Add("mask_not_normalized") }
     if ($CandidateText.Length -lt 20) { $reasons.Add("too_short") }
     $hallucination = ($CandidateText -match "완료") -and ($OriginalText -notmatch "완료|발송|처리|입금")
     return @{
@@ -500,6 +498,8 @@ Write-Output ("Generated base_clean.csv rows={0}" -f $baseClean.Count)
 Write-Output ("Generated base_normalized.csv rows={0}" -f $baseNormalized.Count)
 Write-Output ("Generated augmented_dataset.csv rows={0}" -f $augmented.Count)
 Write-Output ("Generated augmented_validated.csv rows={0}" -f $validated.Count)
+
+
 
 
 

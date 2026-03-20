@@ -2,6 +2,13 @@
 
 `data/origin/stt_summary.csv`를 입력으로 사용해 STT 정제, intent/slot 생성, answer 생성 및 증강, 학습용 split 생성, 버전별 데이터셋 생성, 검수페이지 자산 생성을 수행하는 PowerShell 기반 파이프라인입니다.
 
+## 개인정보 처리 기준
+
+- 원본 `TEXT`는 개인정보 마스킹 없이 그대로 사용합니다.
+- 학습/가공 파이프라인도 `****`, `[MASK]` 같은 마스킹 토큰 정규화를 강제하지 않습니다.
+- 외부 반출이 필요한 경우에는 [`docs/stt_summary_mapping_five.md`](./docs/stt_summary_mapping_five.md) 기준의 비식별화 매핑 데이터를 적용해 반출합니다.
+- 즉, 내부 처리 데이터는 원문 기준이고, 반출 데이터만 매핑 기반 비식별화 대상입니다.
+
 ## 프로젝트 구성
 
 - `scripts/Invoke-SttAugmentation.ps1`
@@ -92,6 +99,23 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Export-QualityReviewData.ps1
 
 기본 모델은 `gpt-5.4`이며 기본 증강 개수는 `5`입니다.
 
+## Qwen3 파인튜닝
+
+Qwen3 기반 파인튜닝용 데이터 변환 및 학습 스크립트를 추가했습니다.
+
+- 데이터 변환: `scripts/Export-Qwen3SftDataset.ps1`
+- 학습 실행: `scripts/Start-Qwen3FineTune.ps1`
+- Python 모듈: `training/qwen3_finetune`
+- 세부 문서: `docs/qwen3_finetuning.md`
+
+기본 흐름:
+
+```powershell
+pip install -r .\training\requirements-qwen3.txt
+powershell -ExecutionPolicy Bypass -File .\scripts\Export-Qwen3SftDataset.ps1 -IncludeIntent -IncludeKeywordSlots
+powershell -ExecutionPolicy Bypass -File .\\scripts\\Start-Qwen3FineTune.ps1 -ModelNameOrPath 'Qwen/Qwen3-4B-Instruct' -TuningMode lora -LoadIn4bit -Bf16
+```
+
 ## 현재 데이터 건수
 
 ### processed 기준
@@ -168,8 +192,8 @@ Import-Csv .\data\versions\ver1.5\train_final.csv | Measure-Object
 ```
 
 ```powershell
-rg -n "\[MASK\]" .\data .\docs .\scripts
-rg -n "\*\*\*\*" .\data\splits .\data\versions
+rg -n "stt_summary_mapping_five|비식별화" .\docs .\README.md
+rg -n "\[MASK\]|\*\*\*\*" .\data\processed .\data\splits .\data\versions
 ```
 
 ## 참고 문서
@@ -177,3 +201,6 @@ rg -n "\*\*\*\*" .\data\splits .\data\versions
 - `docs/stt_summary_augmentation_flow.md`
 - `docs/keyword_slot_rules.md`
 - `docs/stt_summary_augmentation_with_auto_labeling.md`
+- `docs/qwen3_finetuning.md`
+
+

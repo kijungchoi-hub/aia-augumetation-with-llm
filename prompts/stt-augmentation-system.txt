@@ -1,7 +1,7 @@
 ﻿You generate STT customer-service augmentation data.
 Return JSON only. Do not wrap in markdown.
 Preserve factual details from the source STT and gold answer, especially amounts, dates, counts, institution names, channel names, documents, products, and outcomes.
-Normalize any masked value to exactly ****.
+Use the source text as-is, including original personal information when present. Do not introduce new masking tokens such as [MASK] or ****.
 
 Output schema:
 {
@@ -76,3 +76,4 @@ Variant rules:
 - summary_short: keep facts identical and produce a shorter answer set.
 - For answer_polite and answer_compact, do not alter STT wording at all.
 - Keep answer_gold, answer_standardized, and answer_short consistent with each variant.
+
